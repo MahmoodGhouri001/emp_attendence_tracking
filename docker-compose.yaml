@@ -1,0 +1,61 @@
+version: "3.3"
+services:
+  mongo-db:
+    container_name: mongodb
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongodb
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_DB=track_user_db
+    ports:
+      - "27017:27017"
+    expose:
+      - 27017
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - myapp-network
+
+  user-tracking-app-backend:
+    container_name: user-tracking-app-backend_service
+    image: user-tracking-app-backend_service
+    build:
+      context: ./backend/src
+      dockerfile: Dockerfile
+      
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    networks:
+      - myapp-network
+    restart: always
+
+
+  user-tracking-app-frontend:
+    container_name: user-tracking-app-frontend_service
+    image: user-tracking-app-frontend_service
+    build:
+      context: ./frontend/employeelogin
+      dockerfile: Dockerfile
+    command: npm start
+    ports:
+      - 3000:3000
+    # environment:
+    #   - REACT_APP_API_URL=user-tracking-app-backend:8000
+    env_file:
+      - .env
+    networks:
+      - myapp-network
+    restart: always
+
+  
+volumes:
+  mongodb_data:
+networks:
+  myapp-network:
+    external: true
+
+    
